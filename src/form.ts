@@ -73,7 +73,7 @@ export function form<T>(
   state: Readonly<T>,
   onChange: (value: Readonly<T>) => void
 ): FormHelper<T> {
-  const helper: FormHelper<T> = {
+  return {
     fields() {
       return {
         value: state,
@@ -112,5 +112,4 @@ export function form<T>(
       };
     }
   };
-  return helper;
 }
