@@ -62,18 +62,26 @@ interface ChildrenFieldProps {
   onChange: (value: readonly Person[]) => void;
 }
 const ChildrenField = ({ value, onChange }: ChildrenFieldProps) => {
-  const { index } = array(value, onChange);
+  const { index, push, removeAt } = array(value, onChange);
   return (
     <>
-      {value.map((_person, i) => (
+      {value.map((_, i) => (
         <div key={i}>
           <PersonFields {...index(i)} />
+          <button
+            type="button"
+            onClick={() => {
+              removeAt(i);
+            }}
+          >
+            Remove
+          </button>
         </div>
       ))}
       <button
         type="button"
         onClick={() => {
-          onChange([...value, emptyPerson]);
+          push(emptyPerson);
         }}
       >
         Add
