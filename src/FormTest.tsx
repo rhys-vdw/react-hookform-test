@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { array, form } from "./form";
+import { array, form, propsForm } from "./form";
 
 interface Person {
   readonly name: string;
   readonly age: number;
   readonly gender: "male" | "female" | "other";
+  readonly isCool: boolean;
   readonly children: readonly Person[];
 }
 
@@ -12,11 +13,13 @@ const person: Person = {
   name: "Bob",
   age: 50,
   gender: "male",
+  isCool: false,
   children: [
     {
       name: "Sue",
       age: 10,
       gender: "female",
+      isCool: true,
       children: []
     }
   ]
@@ -27,14 +30,16 @@ interface PersonFieldsProps {
   onChange: (value: Person) => void;
 }
 
-const PersonFields = ({ value, onChange }: PersonFieldsProps) => {
-  const { input } = form(value, onChange);
+const PersonFields = (props: PersonFieldsProps) => {
+  const { input, checkbox } = propsForm(props);
   return (
     <>
       <label>Name</label>
       <input type="text" {...input("name")} />
       <label>Age</label>
       <input type="number" {...input("age")} />
+      <label>Cool?</label>
+      <input type="checkbox" {...checkbox("isCool")} />
       <select {...input("gender")}>
         <option value="male">male</option>
         <option value="female">female</option>
@@ -48,6 +53,7 @@ const emptyPerson: Person = {
   name: "",
   age: 0,
   gender: "other",
+  isCool: false,
   children: []
 };
 

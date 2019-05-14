@@ -9,6 +9,12 @@ interface InputProps<I extends InputElement, T, K extends keyof T> {
   onChange: (event: ChangeEvent<I>) => void;
 }
 
+interface CheckboxInputProps {
+  name: string;
+  checked: boolean;
+  onChange: (event: ChangeEvent<HTMLInputElement>) => void;
+}
+
 interface FieldProps<T, K extends keyof T> {
   value: Readonly<T[K]>;
   onChange: (value: Readonly<T[K]>) => void;
@@ -22,6 +28,9 @@ interface FormHelper<T> {
   >(
     property: K
   ): InputProps<I, T, K>;
+  checkbox<K extends keyof PickByValue<T, boolean>>(
+    property: K
+  ): CheckboxInputProps;
   field<K extends keyof T>(property: K): FieldProps<T, K>;
 }
 
@@ -75,6 +84,16 @@ export function form<T>(
         value: state[property],
         onChange: event => {
           onChange({ ...state, [property]: event.currentTarget.value });
+        }
+      };
+    },
+
+    checkbox(property) {
+      return {
+        name: property.toString(),
+        checked: state[property] as any,
+        onChange: event => {
+          onChange({ ...state, [property]: event.currentTarget.checked });
         }
       };
     },
