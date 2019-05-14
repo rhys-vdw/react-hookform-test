@@ -14,7 +14,7 @@ interface FieldProps<T, K extends keyof T> {
   onChange: (value: Readonly<T[K]>) => void;
 }
 
-interface FormHelper<T extends {}> {
+interface FormHelper<T> {
   readonly state: Readonly<T>;
   fields(): { value: Readonly<T>; onChange: (value: Readonly<T>) => void };
   input<
@@ -24,9 +24,29 @@ interface FormHelper<T extends {}> {
     property: K
   ): InputProps<I, T, K>;
   field<K extends keyof T>(property: K): FieldProps<T, K>;
-  index<I extends keyof T & number>(index: number): FieldProps<T, I>;
   form<K extends keyof T>(property: K): FormHelper<T[K]>;
 }
+
+interface ArrayHelper<T extends ReadonlyArray<any>> {
+  index<I extends keyof T & number>(index: I): FieldProps<T, I>;
+}
+
+export const array = <T extends ReadonlyArray<any>>(
+  state: T,
+  onChange: (nextState: T) => void
+): ArrayHelper<T> => ({
+  index(index) {
+    return {
+      value: state[index],
+      onChange: value => {
+        const nextState = [...state];
+        nextState[index] = value;
+        console.log(value, state, nextState);
+        onChange(nextState as any);
+      }
+    };
+  }
+});
 
 export function form<T>(
   state: Readonly<T>,
@@ -58,18 +78,6 @@ export function form<T>(
         value: state[property],
         onChange: value => {
           onChange({ ...state, [property]: value });
-        }
-      };
-    },
-
-    index(index) {
-      const array = state as any;
-      return {
-        value: array[index],
-        onChange: value => {
-          const nextState = [...array];
-          nextState[index] = value;
-          onChange(nextState as any);
         }
       };
     },

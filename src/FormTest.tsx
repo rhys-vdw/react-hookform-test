@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { form, useForm } from "./form";
+import { array, form } from "./form";
 
 interface Person {
   readonly name: string;
@@ -56,7 +56,7 @@ interface ChildrenFieldProps {
   onChange: (value: readonly Person[]) => void;
 }
 const ChildrenField = ({ value, onChange }: ChildrenFieldProps) => {
-  const { index } = form(value, onChange);
+  const { index } = array(value, onChange);
   return (
     <>
       {value.map((_person, i) => (
@@ -78,10 +78,12 @@ const ChildrenField = ({ value, onChange }: ChildrenFieldProps) => {
 
 export const FormTest = () => {
   const [count, setCount] = useState(0);
-  const onChange = () => {
+  const [state, setState] = useState(person);
+  const onChange = (nextState: Person) => {
     setCount(count + 1);
+    setState(nextState);
   };
-  const { fields, field, state } = useForm(person, onChange);
+  const { fields, field } = form(state, onChange);
   return (
     <form
       action="javascript:void 0"
