@@ -22,12 +22,12 @@ const person: Person = {
   ]
 };
 
-interface ChildProps {
+interface PersonFieldsProps {
   value: Person;
   onChange: (value: Person) => void;
 }
 
-const PersonFields = ({ value, onChange }: ChildProps) => {
+const PersonFields = ({ value, onChange }: PersonFieldsProps) => {
   const { input } = form(value, onChange);
   return (
     <>
@@ -35,12 +35,43 @@ const PersonFields = ({ value, onChange }: ChildProps) => {
       <input type="text" {...input("name")} />
       <label>Age</label>
       <input type="number" {...input("age")} />
-      <button type="submit">Submit</button>
       <select {...input("gender")}>
         <option value="male">male</option>
         <option value="female">female</option>
         <option value="other">other</option>
       </select>
+    </>
+  );
+};
+
+const emptyPerson: Person = {
+  name: "",
+  age: 0,
+  gender: "other",
+  children: []
+};
+
+interface ChildrenFieldProps {
+  value: readonly Person[];
+  onChange: (value: readonly Person[]) => void;
+}
+const ChildrenField = ({ value, onChange }: ChildrenFieldProps) => {
+  const { index } = form(value, onChange);
+  return (
+    <>
+      {value.map((_person, i) => (
+        <div key={i}>
+          <PersonFields {...index(i)} />
+        </div>
+      ))}
+      <button
+        type="button"
+        onClick={() => {
+          onChange([...value, emptyPerson]);
+        }}
+      >
+        Add
+      </button>
     </>
   );
 };
@@ -52,7 +83,7 @@ export const FormTest = () => {
     setCount(count + 1);
     setState(nextState);
   };
-  const { field } = form(state, setState).form("children");
+  const { field } = form(state, setState);
   return (
     <form
       action="javascript:void 0"
@@ -61,10 +92,9 @@ export const FormTest = () => {
       <h4>Parent</h4>
       <PersonFields value={state} onChange={onChange} />
       <h5>Children</h5>
-      {state.children.map((child, i) => (
-        <PersonFields {...field(i)} />
-      ))}
+      <ChildrenField {...field("children")} />
       <div>Change count: {count}</div>
+      <button type="submit">Submit</button>
     </form>
   );
 };

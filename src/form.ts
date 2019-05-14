@@ -24,34 +24,47 @@ interface FormHelper<T extends {}> {
     property: K
   ): InputProps<I, T, K>;
   field<K extends keyof T>(property: K): FieldProps<T, K>;
+  index<I extends keyof T & number>(index: number): FieldProps<T, I>;
   form<K extends keyof T>(property: K): FormHelper<T[K]>;
 }
 
 export function form<T>(
-  value: Readonly<T>,
+  state: Readonly<T>,
   onChange: (value: Readonly<T>) => void
 ): FormHelper<T> {
   const helper: FormHelper<T> = {
-    value,
+    value: state,
     setFields(fields) {
-      onChange({ ...value, ...fields });
+      onChange({ ...state, ...fields });
     },
 
     input(property) {
       return {
         name: property.toString(),
-        value: value[property],
+        value: state[property],
         onChange: event => {
-          onChange({ ...value, [property]: event.currentTarget.value });
+          onChange({ ...state, [property]: event.currentTarget.value });
         }
       };
     },
 
     field(property) {
       return {
-        value: value[property],
+        value: state[property],
         onChange: value => {
-          onChange({ ...value, [property]: value } as any);
+          onChange({ ...state, [property]: value });
+        }
+      };
+    },
+
+    index(index) {
+      const array = state as any;
+      return {
+        value: array[index],
+        onChange: value => {
+          const nextState = [...array];
+          nextState[index] = value;
+          onChange(nextState as any);
         }
       };
     },
