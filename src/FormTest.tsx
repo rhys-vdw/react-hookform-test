@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "./form";
 
 export const FormTest = () => {
@@ -7,7 +7,10 @@ export const FormTest = () => {
     age: 50,
     gender: "male" as "male" | "female" | "other"
   };
-  const { value, input } = useForm(person);
+  const [count, setCount] = useState(0);
+  const { value, input } = useForm(person, () => {
+    setCount(count + 1);
+  });
   return (
     <form
       action="javascript:void 0"
@@ -23,6 +26,7 @@ export const FormTest = () => {
         <option value="female">female</option>
         <option value="other">other</option>
       </select>
+      <div>Change count: {count}</div>
     </form>
   );
 };
