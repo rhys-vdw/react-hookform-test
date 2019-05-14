@@ -1,12 +1,30 @@
 import React, { useState } from "react";
 import { useForm } from "./form";
 
+interface Person {
+  readonly name: string;
+  readonly age: number;
+  readonly gender: "male" | "female" | "other";
+}
+
+const person: Person = {
+  name: "Bob",
+  age: 50,
+  gender: "male"
+};
+
+interface ChildProps {
+  value: Person;
+  onChange: (value: Person) => void;
+}
+
+// const Child = ({ value, onChange }: ChildProps) => {
+//   const { input } = useForm(value, onChange)
+//   return (
+//   )
+// }
+
 export const FormTest = () => {
-  const person = {
-    name: "Bob",
-    age: 50,
-    gender: "male" as "male" | "female" | "other"
-  };
   const [count, setCount] = useState(0);
   const { value, input } = useForm(person, () => {
     setCount(count + 1);
