@@ -10,8 +10,8 @@ interface InputProps<I extends InputElement, T, K extends keyof T> {
 }
 
 interface FieldProps<T, K extends keyof T> {
-  value: T[K];
-  onChange: (value: T[K]) => void;
+  value: Readonly<T[K]>;
+  onChange: (value: Readonly<T[K]>) => void;
 }
 
 interface FormHelper<T extends {}> {
@@ -24,30 +24,17 @@ interface FormHelper<T extends {}> {
     property: K
   ): InputProps<I, T, K>;
   field<K extends keyof T>(property: K): FieldProps<T, K>;
+  form<K extends keyof T>(property: K): FormHelper<T[K]>;
 }
 
-// function formState<T extends {}>(value: T, onChange: (value: T) => void) {}
-
-export function useForm<T extends {}>(
-  initialValue: T,
-  onChange?: (value: T) => void
+export function form<T>(
+  value: Readonly<T>,
+  onChange: (value: Readonly<T>) => void
 ): FormHelper<T> {
-  // const [parentValue, setParentValue] = useState(initialValue);
-  const [value, setValue] = useState(initialValue);
-
-  // if (initialValue !== parentValue) {
-  //   setParentValue(initialValue);
-  //   setValue(value);
-  // }
-
-  const handlers = {
+  const helper: FormHelper<T> = {
     value,
     setFields(fields) {
-      const nextValue = { ...value, ...fields };
-      setValue(nextValue);
-      if (onChange !== undefined) {
-        onChange(nextValue);
-      }
+      onChange({ ...value, ...fields });
     },
 
     input(property) {
@@ -55,7 +42,7 @@ export function useForm<T extends {}>(
         name: property.toString(),
         value: value[property],
         onChange: event => {
-          handlers.setFields({ [property]: event.currentTarget.value } as any);
+          onChange({ ...value, [property]: event.currentTarget.value });
         }
       };
     },
@@ -63,10 +50,29 @@ export function useForm<T extends {}>(
     field(property) {
       return {
         value: value[property],
-        onChange: handlers.setFields
+        onChange: value => {
+          onChange({ ...value, [property]: value } as any);
+        }
       };
-    }
-  } as FormHelper<T>;
+    },
 
-  return handlers;
+    form(property) {
+      const { value, onChange } = helper.field(property);
+      return form(value, onChange);
+    }
+  };
+  return helper;
+}
+
+export function useForm<T>(
+  initialValue: T,
+  onChange?: (value: T) => void
+): FormHelper<T> {
+  const [value, setValue] = useState(initialValue);
+  return form(value, value => {
+    setValue(value);
+    if (onChange !== undefined) {
+      onChange(value);
+    }
+  });
 }
