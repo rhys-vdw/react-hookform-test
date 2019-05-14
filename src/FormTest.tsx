@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { array, form, propsForm } from "./form";
+import { ArrayProps, FieldProps, form, propsArray, propsForm } from "./form";
 
 interface Person {
   readonly name: string;
@@ -25,12 +25,7 @@ const person: Person = {
   ]
 };
 
-interface PersonFieldsProps {
-  value: Person;
-  onChange: (value: Person) => void;
-}
-
-const PersonFields = (props: PersonFieldsProps) => {
+const PersonFields = (props: FieldProps<Person>) => {
   const { input, checkbox } = propsForm(props);
   return (
     <>
@@ -57,15 +52,11 @@ const emptyPerson: Person = {
   children: []
 };
 
-interface ChildrenFieldProps {
-  value: readonly Person[];
-  onChange: (value: readonly Person[]) => void;
-}
-const ChildrenField = ({ value, onChange }: ChildrenFieldProps) => {
-  const { index, push, removeAt } = array(value, onChange);
+const ChildrenField = (props: ArrayProps<Person>) => {
+  const { index, push, removeAt } = propsArray(props);
   return (
     <>
-      {value.map((_, i) => (
+      {props.value.map((_, i) => (
         <div key={i}>
           <PersonFields {...index(i)} />
           <button
@@ -97,14 +88,14 @@ export const FormTest = () => {
     setCount(count + 1);
     setState(nextState);
   };
-  const { fields, field } = form(state, onChange);
+  const { field } = form(state, onChange);
   return (
     <form
       action="javascript:void 0"
       onSubmit={() => alert(JSON.stringify(state, null, 4))}
     >
       <h4>Parent</h4>
-      <PersonFields {...fields()} />
+      <PersonFields value={state} onChange={onChange} />
       <h5>Children</h5>
       <ChildrenField {...field("children")} />
       <div>Change count: {count}</div>

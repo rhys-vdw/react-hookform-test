@@ -18,13 +18,20 @@ interface CheckboxInputProps {
   onChange: (event: ChangeEvent<HTMLInputElement>) => void;
 }
 
-interface FieldProps<V> {
-  value: Readonly<V>;
+export interface FieldProps<V> {
+  name?: string;
+  value: V;
   onChange: (value: Readonly<V>) => void;
 }
 
+export interface ArrayProps<V> {
+  name?: string;
+  value: readonly Readonly<V>[];
+  onChange: (value: readonly Readonly<V>[]) => void;
+}
+
 interface FormHelper<T> {
-  fields(): { value: Readonly<T>; onChange: (value: Readonly<T>) => void };
+  fields(): FieldProps<T>;
   input<K extends keyof PickByValue<T, string | number>>(
     property: K
   ): ValueInputProps;
@@ -40,12 +47,17 @@ interface ArrayHelper<V> {
   removeAt(index: number): void;
 }
 
+export const propsArray = <V>({ value, onChange, name }: ArrayProps<V>) =>
+  array(value, onChange, name);
+
 export const array = <V>(
   state: readonly Readonly<V>[],
-  onChange: (nextState: readonly Readonly<V>[]) => void
+  onChange: (nextState: readonly Readonly<V>[]) => void,
+  name?: string
 ): ArrayHelper<V> => ({
   index(index) {
     return {
+      name: indexName(name, index),
       value: state[index],
       onChange: value => {
         const nextState = [...state];
@@ -66,16 +78,18 @@ export const array = <V>(
   }
 });
 
-export const propsForm = <T>({ value, onChange }: FieldProps<T>) =>
-  form(value, onChange);
+export const propsForm = <T>({ value, onChange, name }: FieldProps<T>) =>
+  form(value, onChange, name);
 
 export function form<T>(
   state: Readonly<T>,
-  onChange: (value: Readonly<T>) => void
+  onChange: (value: Readonly<T>) => void,
+  name?: string
 ): FormHelper<T> {
   return {
     fields() {
       return {
+        name,
         value: state,
         onChange(nextState: Partial<T>) {
           onChange({ ...state, ...nextState });
@@ -85,7 +99,7 @@ export function form<T>(
 
     input(property) {
       return {
-        name: property.toString(),
+        name: fieldName(name, property as string),
         value: state[property] as any,
         onChange: event => {
           onChange({ ...state, [property]: event.currentTarget.value });
@@ -95,7 +109,7 @@ export function form<T>(
 
     checkbox(property) {
       return {
-        name: property.toString(),
+        name: fieldName(name, property as string),
         checked: state[property] as any,
         onChange: event => {
           onChange({ ...state, [property]: event.currentTarget.checked });
@@ -105,6 +119,7 @@ export function form<T>(
 
     field(property) {
       return {
+        name: fieldName(name, property as string),
         value: state[property],
         onChange: value => {
           onChange({ ...state, [property]: value });
@@ -112,4 +127,11 @@ export function form<T>(
       };
     }
   };
+}
+
+function fieldName(obj: string | undefined, field: string | number): string {
+  return obj === undefined ? field.toString() : `${obj}.${field}`;
+}
+function indexName(array: string | undefined, index: number): string {
+  return array === undefined ? `[${index}]` : `${array}[${index}]`;
 }
