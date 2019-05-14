@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { form } from "./form";
+import { form, useForm } from "./form";
 
 interface Person {
   readonly name: string;
@@ -78,19 +78,17 @@ const ChildrenField = ({ value, onChange }: ChildrenFieldProps) => {
 
 export const FormTest = () => {
   const [count, setCount] = useState(0);
-  const [state, setState] = useState(person);
-  const onChange = (nextState: Person) => {
+  const onChange = () => {
     setCount(count + 1);
-    setState(nextState);
   };
-  const { field } = form(state, setState);
+  const { fields, field, state } = useForm(person, onChange);
   return (
     <form
       action="javascript:void 0"
       onSubmit={() => alert(JSON.stringify(state, null, 4))}
     >
       <h4>Parent</h4>
-      <PersonFields value={state} onChange={onChange} />
+      <PersonFields {...fields()} />
       <h5>Children</h5>
       <ChildrenField {...field("children")} />
       <div>Change count: {count}</div>

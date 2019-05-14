@@ -15,8 +15,8 @@ interface FieldProps<T, K extends keyof T> {
 }
 
 interface FormHelper<T extends {}> {
-  readonly value: Readonly<T>;
-  setFields(fields: Partial<Readonly<T>>): void;
+  readonly state: Readonly<T>;
+  fields(): { value: Readonly<T>; onChange: (value: Readonly<T>) => void };
   input<
     I extends InputElement,
     K extends keyof PickByValue<T, string | number>
@@ -33,9 +33,14 @@ export function form<T>(
   onChange: (value: Readonly<T>) => void
 ): FormHelper<T> {
   const helper: FormHelper<T> = {
-    value: state,
-    setFields(fields) {
-      onChange({ ...state, ...fields });
+    state,
+    fields() {
+      return {
+        value: state,
+        onChange(nextState: Partial<T>) {
+          onChange({ ...state, ...nextState });
+        }
+      };
     },
 
     input(property) {
