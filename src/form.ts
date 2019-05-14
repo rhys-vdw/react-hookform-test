@@ -1,4 +1,4 @@
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent } from "react";
 import { PickByValue } from "utility-types";
 
 type InputElement = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
@@ -15,7 +15,6 @@ interface FieldProps<T, K extends keyof T> {
 }
 
 interface FormHelper<T> {
-  readonly state: Readonly<T>;
   fields(): { value: Readonly<T>; onChange: (value: Readonly<T>) => void };
   input<
     I extends InputElement,
@@ -24,7 +23,6 @@ interface FormHelper<T> {
     property: K
   ): InputProps<I, T, K>;
   field<K extends keyof T>(property: K): FieldProps<T, K>;
-  form<K extends keyof T>(property: K): FormHelper<T[K]>;
 }
 
 interface ArrayHelper<T extends ReadonlyArray<any>> {
@@ -41,19 +39,27 @@ export const array = <T extends ReadonlyArray<any>>(
       onChange: value => {
         const nextState = [...state];
         nextState[index] = value;
-        console.log(value, state, nextState);
         onChange(nextState as any);
       }
     };
   }
 });
 
+export function propsForm<T>({
+  value,
+  onChange
+}: {
+  value: Readonly<T>;
+  onChange: (value: Readonly<T>) => void;
+}) {
+  return form(value, onChange);
+}
+
 export function form<T>(
   state: Readonly<T>,
   onChange: (value: Readonly<T>) => void
 ): FormHelper<T> {
   const helper: FormHelper<T> = {
-    state,
     fields() {
       return {
         value: state,
@@ -80,25 +86,7 @@ export function form<T>(
           onChange({ ...state, [property]: value });
         }
       };
-    },
-
-    form(property) {
-      const { value, onChange } = helper.field(property);
-      return form(value, onChange);
     }
   };
   return helper;
-}
-
-export function useForm<T>(
-  initialValue: T,
-  onChange?: (value: T) => void
-): FormHelper<T> {
-  const [value, setValue] = useState(initialValue);
-  return form(value, value => {
-    setValue(value);
-    if (onChange !== undefined) {
-      onChange(value);
-    }
-  });
 }
